@@ -1,0 +1,9 @@
+fastapi==0.115.6
+uvicorn[standard]==0.30.6
+python-chess==1.999
+openai==1.40.0
+sqlalchemy==2.0.32
+psycopg[binary]==3.2.1
+rq==1.16.2
+redis==5.0.8
+pydantic==2.8.2
