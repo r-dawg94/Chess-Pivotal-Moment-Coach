@@ -14,11 +14,11 @@ Web app that lets me upload a PGN, run engine analysis, and return “pivotal mo
 PASTE COMMAND HERE (e.g., docker compose up --build)
 
 ### Health checks
-- Backend local: curl -sS http://localhost:8000/docs >/dev/null && echo backend_local_OK || echo backend_local_BAD
-- Frontend local: curl -sS http://localhost:3000/ | head -n 5
+- Backend: curl -sS http://localhost:8000/docs >/dev/null && echo backend_OK || echo backend_BAD
+- Frontend: curl -sS http://localhost:3000/ | head -n 5
 
 ## Environment variables
-- NEXT_PUBLIC_API_BASE = https://<YOUR-CODESPACE>-8000.app.github.dev
+- NEXT_PUBLIC_API_BASE=https://<YOUR-CODESPACE>-8000.app.github.dev
 
 ## Current blocker
 When I click **Analyze** in the UI, I get an error.
