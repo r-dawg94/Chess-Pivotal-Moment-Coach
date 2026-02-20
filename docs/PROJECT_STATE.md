@@ -1,45 +1,64 @@
-cd /workspaces/Chess-Pivotal-Moment-Coach
-mkdir -p docs
-nano docs/PROJECT_STATE.md
-# Chess Pivotal Moment Coach — Project State
+Last updated: 2026-02-20
+# Chess Pivotal Moment Coach — Project State (Source of Truth)
 
-## Goal
-(One sentence)
+## One-sentence goal
+Web app that lets me upload a PGN, run engine analysis, and return “pivotal moment” coaching feedback.
 
-## Stack / Architecture
+## What’s running
 - Frontend: Next.js (port 3000)
 - Backend: FastAPI (port 8000)
-- Engine: Stockfish
-- Deployment: GitHub Codespaces + forwarded ports
+- Dev env: GitHub Codespaces
 
-## How to run (Codespace)
-### Backend
-(command)
-### Frontend
-(command)
+## How I run it (Codespace)
+### Start everything (preferred)
+(Write the exact command you run here, e.g. `docker compose up --build` OR `npm run dev` etc.)
 
-## Environment Variables
-- NEXT_PUBLIC_API_BASE=
-- (others)
+### Quick health checks I use
+- Backend local: `curl -sS http://localhost:8000/docs >/dev/null && echo backend_local_OK || echo backend_local_BAD`
+- Backend tunneled: `curl -sS "https://YOUR-8000.app.github.dev/docs" >/dev/null && echo backend_tunnel_OK || echo backend_tunnel_BAD`
+- Frontend local: `curl -sS http://localhost:3000/ | head -n 5`
 
-## Current Problem
-- What action triggers it:
-- Exact error text:
-- Screenshot/console output:
-- Suspected file/component:
+## Environment variables (important)
+- NEXT_PUBLIC_API_BASE = https://<CODESPACE>-8000.app.github.dev
+  - NOTE: I previously tried `NEXT_PUBLIC_API_BASE=https://<codespace>-8000.app.github.dev` and got: `bash: codespace: No such file or directory`
+  - Fix: replace `<CODESPACE>` with the actual codespace hostname
 
-## Recent Changes
-- (what you changed last)
+## Current blocker
+When I click **Analyze** in the frontend UI, I get an error.
 
-## Key Files
-- frontend: path/to/component.tsx
-- backend: path/to/route.py
+### Error details (paste EXACT text)
+- Browser console error:
+  - PASTE HERE
+- Network error (if any from DevTools → Network):
+  - PASTE HERE
+- Backend logs error (if any):
+  - PASTE HERE
 
-## Next Steps
-1.
-2.
-3.
+## UI change requested
+Remove the **“hydration” section** from the UI (it looks bad and isn’t needed).
 
-git add docs/PROJECT_STATE.md
-git commit -m "Add project state handoff doc"
-git push
+- Where it appears:
+  - (Page name / component name if you know) PASTE HERE
+- Suspected file(s):
+  - PASTE HERE (example: `frontend/components/...`)
+
+## What I already verified
+- Frontend listens on 3000 (Next server running)
+- Backend `/docs` works locally and through the forwarded GitHub URL
+
+## Recent context / history
+- Codespace restarted recently; I may need to re-init running services
+- I ran checks showing backend_local_OK and backend_tunnel_OK
+
+## Next actions (what I want ChatGPT to do next)
+1. Identify why clicking **Analyze** errors (likely API base URL / fetch / CORS / route mismatch / response parsing).
+2. Remove the hydration UI block cleanly.
+3. Provide exact code changes + file paths + terminal commands to apply fixes.
+
+## Key files (fill in once you know)
+- Frontend Analyze button / upload form component:
+  - PASTE PATH HERE (example: `frontend/components/UploadForm.tsx` or `app/page.tsx`)
+- API call helper:
+  - PASTE PATH HERE
+- Backend endpoint for analysis:
+  - PASTE PATH HERE (example: `backend/app/main.py` or `backend/app/routes/analyze.py`)
