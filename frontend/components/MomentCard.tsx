@@ -13,6 +13,8 @@ export default function MomentCard({ m }: { m: any }) {
           fen={m.fen_before}
           pvMoves={m.pv_best || []}
           pvPlayedMoves={m.pv_played || []}
+          candidatesBest={m.candidates || []}
+          candidatesPlayed={m.candidates_played || []}
           title="Best line (Stockfish)"
         />
     </div>

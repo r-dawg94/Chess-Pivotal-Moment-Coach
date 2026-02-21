@@ -1,13 +1,34 @@
 "use client";
 import dynamic from "next/dynamic";
+import dynamic from "next/dynamic";
 import { useState } from "react";
-
 const Chessboard = dynamic(() => import("chessboardjsx"), { ssr: false });
+type PVMove = { uci: string; san: string; fen_after?: string };
+type CandidateLine = { uci: string; san: string; eval_cp?: number | null; pv: PVMove[] };
 
-export default function InteractiveBoard({ fen, pvMoves, pvPlayedMoves, title = "Best line" }: { fen: string, pvMoves: PVMove[], pvPlayedMoves?: PVMove[], title?: string }) {
+export default function InteractiveBoard({
+  fen,
+  pvMoves,
+  pvPlayedMoves,
+  candidatesBest,
+  candidatesPlayed,
+  title = "Best line"
+}: {
+  fen: string,
+  pvMoves: PVMove[],
+  pvPlayedMoves?: PVMove[],
+  candidatesBest?: CandidateLine[],
+  candidatesPlayed?: CandidateLine[],
+  title?: string
+}) {
   const [currentMove, setCurrentMove] = useState(0);
   const [lineType, setLineType] = useState<"best" | "played">("best");
-  const moves = lineType === "played" && pvPlayedMoves && pvPlayedMoves.length ? pvPlayedMoves : pvMoves;
+  const [candIndex, setCandIndex] = useState(0);
+
+  // Derive candidates
+  const cands = lineType === "played" ? (candidatesPlayed || []) : (candidatesBest || []);
+  const activeCand = cands[candIndex] || null;
+  const moves = activeCand?.pv?.length ? activeCand.pv : (lineType === "played" ? (pvPlayedMoves || []) : pvMoves);
 
   // Build FEN sequence for PV
   const fens = [fen];
@@ -15,7 +36,7 @@ export default function InteractiveBoard({ fen, pvMoves, pvPlayedMoves, title = 
   try {
     const Chess = require("chess.js").Chess;
     const chess = new Chess(fen);
-    pvMoves.forEach((move: any) => {
+    moves.forEach((move: any) => {
       chess.move({ from: move.uci.slice(0,2), to: move.uci.slice(2,4), promotion: "q" });
       fens.push(chess.fen());
     });
@@ -29,8 +50,31 @@ export default function InteractiveBoard({ fen, pvMoves, pvPlayedMoves, title = 
           Step {currentMove}/{fens.length - 1}
         </div>
         <div>
-          <button onClick={() => setLineType(lineType === "best" ? "played" : "best")}>Toggle Line</button>
+          <button
+            onClick={() => {
+              setLineType(lineType === "best" ? "played" : "best");
+              setCandIndex(0);
+              setCurrentMove(0);
+            }}
+          >Toggle Line</button>
         </div>
+        {cands.length > 0 && (
+          <select
+            value={candIndex}
+            onChange={e => {
+              setCandIndex(Number(e.target.value));
+              setCurrentMove(0);
+            }}
+            style={{ marginLeft: 10 }}
+          >
+            {cands.map((c, idx) => (
+              <option key={c.uci} value={idx}>
+                {`${idx + 1}. ${c.san} (${c.eval_cp ?? "N/A"})`}
+              </option>
+            ))}
+          </select>
+        )}
+      </div>
       </div>
       <div style={{ marginTop: 10, display: "flex", gap: 14, flexWrap: "wrap" }}>
         <div>
@@ -56,6 +100,11 @@ export default function InteractiveBoard({ fen, pvMoves, pvPlayedMoves, title = 
                 </button>
               );
             })}
+          {activeCand && (
+            <div style={{ marginTop: 8, fontSize: 13, fontWeight: 500 }}>
+              Eval: {activeCand.eval_cp ?? "N/A"}
+            </div>
+          )}
           </div>
           <div style={{ marginTop: 10, fontSize: 12, opacity: 0.75 }}>
             Tip: backend already provides <code>fen_after</code> for each PV move—this board will use it automatically.
