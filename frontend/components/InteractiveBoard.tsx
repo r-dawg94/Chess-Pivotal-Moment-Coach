@@ -1,7 +1,7 @@
-"use client";
-import dynamic from "next/dynamic";
-import { useState, useEffect, useMemo } from "react";
+ "use client";
+ import { useState, useEffect, useMemo } from "react";
 const Chessboard = require("chessboardjsx").default;
+import { Chess } from "chess.js";
 type PVMove = { uci: string; san: string; fen_after?: string };
 type CandidateLine = { uci: string; san: string; eval_cp?: number | null; pv: PVMove[] };
 
@@ -37,30 +37,35 @@ export default function InteractiveBoard({
   // Build FEN sequence for PV using fen_after if present, else chess.js
   const fens = useMemo(() => {
     const out = [fen];
-    let board = fen;
-    let useChess = false;
-    if (moves.length > 0) {
-      // Check if all moves have fen_after
-      if (moves.every(m => m.fen_after)) {
-        moves.forEach((m) => {
-          out.push(m.fen_after!);
-        });
-      } else {
-        useChess = true;
-      }
-    }
-    if (useChess) {
+    if (moves.length > 0 && moves.every(m => m.fen_after)) {
+      moves.forEach((m) => {
+        out.push(m.fen_after!);
+      });
+    } else if (moves.length > 0) {
       try {
-        const Chess = require("chess.js").Chess;
         const chess = new Chess(fen);
         moves.forEach((move: any) => {
-          chess.move({ from: move.uci.slice(0,2), to: move.uci.slice(2,4), promotion: "q" });
+          const from = move.uci.slice(0,2);
+          const to = move.uci.slice(2,4);
+          const promotion = move.uci.length === 5 ? move.uci[4] : undefined;
+          chess.move({ from, to, promotion });
           out.push(chess.fen());
         });
       } catch (e) {}
     }
     return out;
   }, [fen, moves]);
+      <div style={{ marginTop: 10 }}>
+        <button
+          style={{ padding: "4px 8px", borderRadius: 8, border: "1px solid #ccc", fontWeight: 600, cursor: "pointer" }}
+          onClick={() => {
+            const pgnMoves = moves.slice(currentMove).map(m => m.san).join(" ");
+            navigator.clipboard.writeText(pgnMoves);
+          }}
+        >
+          Copy PGN-from-here
+        </button>
+      </div>
 
   // Guard: currentMove never exceeds fens.length-1
   useEffect(() => {
