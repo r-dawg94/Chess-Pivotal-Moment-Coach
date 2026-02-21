@@ -104,32 +104,41 @@ export default function InteractiveBoard({
       <div style={{ marginTop: 10, display: "flex", gap: 14, flexWrap: "wrap" }}>
         <div>
           <Chessboard position={fens[currentMove]} width={320} />
-          <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-            {(moves || []).map((m, idx) => {
-              const step = idx + 1;
-              const active = currentMove === step;
-              return (
-                <button
-                  key={`${m.uci}-${idx}`}
-                  onClick={() => setCurrentMove(step)}
-                  style={{
-                    padding: "4px 8px",
-                    borderRadius: 8,
-                    border: "1px solid #ccc",
-                    background: active ? "#eee" : "#fff",
-                    cursor: "pointer",
-                  }}
-                  title={m.uci}
-                >
-                  {m.san}
-                </button>
-              );
-            })}
-            {activeCand && (
-              <div style={{ marginTop: 8, fontSize: 13, fontWeight: 500 }}>
-                Eval: {activeCand.eval_cp ?? "N/A"}
-              </div>
-            )}
+          <div style={{ display: "flex", gap: 8, marginTop: 8, alignItems: "center" }}>
+            <button
+              onClick={() => setCurrentMove(currentMove - 1)}
+              disabled={currentMove <= 0}
+              style={{
+                padding: "4px 8px",
+                borderRadius: 8,
+                border: "1px solid #ccc",
+                background: currentMove <= 0 ? "#f5f5f5" : "#fff",
+                cursor: currentMove <= 0 ? "not-allowed" : "pointer",
+                fontWeight: 600
+              }}
+              title="Back"
+            >◀</button>
+            <button
+              onClick={() => setCurrentMove(currentMove + 1)}
+              disabled={currentMove >= fens.length - 1}
+              style={{
+                padding: "4px 8px",
+                borderRadius: 8,
+                border: "1px solid #ccc",
+                background: currentMove >= fens.length - 1 ? "#f5f5f5" : "#fff",
+                cursor: currentMove >= fens.length - 1 ? "not-allowed" : "pointer",
+                fontWeight: 600
+              }}
+              title="Forward"
+            >▶</button>
+            <span style={{ marginLeft: 12, fontSize: 15, fontWeight: 500 }}>
+              {currentMove === 0
+                ? "Start position"
+                : moves[currentMove - 1]?.san || ""}
+              {"eval_cp" in (moves[currentMove - 1] || {}) && typeof (moves[currentMove - 1] as any).eval_cp === "number"
+                ? ` (Eval: ${(moves[currentMove - 1] as any).eval_cp})`
+                : ""}
+            </span>
           </div>
           <div style={{ marginTop: 10, fontSize: 12, opacity: 0.75 }}>
             Tip: backend already provides <code>fen_after</code> for each PV move—this board will use it automatically.
