@@ -1,7 +1,7 @@
 "use client";
 import dynamic from "next/dynamic";
 import dynamic from "next/dynamic";
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 const Chessboard = dynamic(() => import("chessboardjsx"), { ssr: false });
 type PVMove = { uci: string; san: string; fen_after?: string };
 type CandidateLine = { uci: string; san: string; eval_cp?: number | null; pv: PVMove[] };
@@ -25,10 +25,50 @@ export default function InteractiveBoard({
   const [lineType, setLineType] = useState<"best" | "played">("best");
   const [candIndex, setCandIndex] = useState(0);
 
+  // Reset currentMove when lineType or candIndex changes
+  useEffect(() => {
+    setCurrentMove(0);
+  }, [lineType, candIndex]);
+
   // Derive candidates
   const cands = lineType === "played" ? (candidatesPlayed || []) : (candidatesBest || []);
   const activeCand = cands[candIndex] || null;
   const moves = activeCand?.pv?.length ? activeCand.pv : (lineType === "played" ? (pvPlayedMoves || []) : pvMoves);
+
+  // Build FEN sequence for PV using fen_after if present, else chess.js
+  const fens = useMemo(() => {
+    const out = [fen];
+    let board = fen;
+    let useChess = false;
+    if (moves.length > 0) {
+      // Check if all moves have fen_after
+      if (moves.every(m => m.fen_after)) {
+        moves.forEach((m) => {
+          out.push(m.fen_after!);
+        });
+      } else {
+        useChess = true;
+      }
+    }
+    if (useChess) {
+      try {
+        const Chess = require("chess.js").Chess;
+        const chess = new Chess(fen);
+        moves.forEach((move: any) => {
+          chess.move({ from: move.uci.slice(0,2), to: move.uci.slice(2,4), promotion: "q" });
+          out.push(chess.fen());
+        });
+      } catch (e) {}
+    }
+    return out;
+  }, [fen, moves]);
+
+  // Guard: currentMove never exceeds fens.length-1
+  useEffect(() => {
+    if (currentMove > fens.length - 1) {
+      setCurrentMove(fens.length - 1);
+    }
+  }, [currentMove, fens]);
 
   // Build FEN sequence for PV
   const fens = [fen];
