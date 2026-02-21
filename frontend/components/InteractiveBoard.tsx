@@ -1,8 +1,7 @@
 "use client";
 import dynamic from "next/dynamic";
-import dynamic from "next/dynamic";
 import { useState, useEffect, useMemo } from "react";
-const Chessboard = dynamic(() => import("chessboardjsx"), { ssr: false });
+const Chessboard = require("chessboardjsx").default;
 type PVMove = { uci: string; san: string; fen_after?: string };
 type CandidateLine = { uci: string; san: string; eval_cp?: number | null; pv: PVMove[] };
 
@@ -69,19 +68,6 @@ export default function InteractiveBoard({
       setCurrentMove(fens.length - 1);
     }
   }, [currentMove, fens]);
-
-  // Build FEN sequence for PV
-  const fens = [fen];
-  let board = fen;
-  try {
-    const Chess = require("chess.js").Chess;
-    const chess = new Chess(fen);
-    moves.forEach((move: any) => {
-      chess.move({ from: move.uci.slice(0,2), to: move.uci.slice(2,4), promotion: "q" });
-      fens.push(chess.fen());
-    });
-  } catch (e) {}
-
   return (
     <div style={{ marginTop: 10, padding: 10, border: "1px solid #ddd", borderRadius: 10 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 10 }}>
@@ -115,7 +101,6 @@ export default function InteractiveBoard({
           </select>
         )}
       </div>
-      </div>
       <div style={{ marginTop: 10, display: "flex", gap: 14, flexWrap: "wrap" }}>
         <div>
           <Chessboard position={fens[currentMove]} width={320} />
@@ -140,11 +125,11 @@ export default function InteractiveBoard({
                 </button>
               );
             })}
-          {activeCand && (
-            <div style={{ marginTop: 8, fontSize: 13, fontWeight: 500 }}>
-              Eval: {activeCand.eval_cp ?? "N/A"}
-            </div>
-          )}
+            {activeCand && (
+              <div style={{ marginTop: 8, fontSize: 13, fontWeight: 500 }}>
+                Eval: {activeCand.eval_cp ?? "N/A"}
+              </div>
+            )}
           </div>
           <div style={{ marginTop: 10, fontSize: 12, opacity: 0.75 }}>
             Tip: backend already provides <code>fen_after</code> for each PV move—this board will use it automatically.

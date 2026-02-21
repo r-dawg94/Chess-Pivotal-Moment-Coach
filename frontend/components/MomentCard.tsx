@@ -1,5 +1,5 @@
-import InteractiveBoard from "./InteractiveBoard";
 "use client";
+import InteractiveBoard from "./InteractiveBoard";
 
 export default function MomentCard({ m }: { m: any }) {
   return (
@@ -17,6 +17,7 @@ export default function MomentCard({ m }: { m: any }) {
           candidatesPlayed={m.candidates_played || []}
           title="Best line (Stockfish)"
         />
+      </div>
     </div>
   );
 }
