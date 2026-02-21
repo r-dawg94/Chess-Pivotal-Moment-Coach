@@ -1,3 +1,4 @@
+import InteractiveBoard from "./InteractiveBoard";
 "use client";
 
 export default function MomentCard({ m }: { m: any }) {
@@ -7,12 +8,13 @@ export default function MomentCard({ m }: { m: any }) {
         <div><b>Ply {m.ply}</b> • {m.side_to_move} to move</div>
         <div style={{ opacity: 0.8 }}><b>{m.severity}</b> • Δ {m.delta_cp}</div>
       </div>
-      <div style={{ marginTop: 6 }}>
-        Played: <b>{m.played_san}</b> • Best: <b>{m.best_san}</b>
-      </div>
-      <div style={{ marginTop: 6, opacity: 0.9 }}>
-        PV: {Array.isArray(m.pv_san) ? m.pv_san.join(" ") : ""}
-      </div>
+      <div style={{ marginTop: 10 }}>
+        <InteractiveBoard
+          fen={m.fen_before}
+          pvMoves={m.pv_best || []}
+          pvPlayedMoves={m.pv_played || []}
+          title="Best line (Stockfish)"
+        />
     </div>
   );
 }
